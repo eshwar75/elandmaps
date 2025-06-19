@@ -59,6 +59,13 @@ react {
  */
 def enableProguardInReleaseBuilds = false
 
+def localPropertiesFile = rootProject.file('local.properties')
+def localProperties = new Properties()
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+}
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
  *
@@ -84,6 +91,10 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [
+            // googleMapsApiKey: project.property('GOOGLE_MAPS_API_KEY')
+            googleMapsApiKey: localProperties['GOOGLE_MAPS_API_KEY'] ?: ""
+        ]
     }
     signingConfigs {
         debug {
@@ -111,6 +122,8 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    implementation project(':react-native-maps')
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
