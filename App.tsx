@@ -11,9 +11,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
 import { requestStartUpPermission } from './src/Utils';
-// import { Platform } from 'react-native';
-// import LiveTrackingMapScreen from './src/screens/HomeScreen';
 import MapScreen from './src/screens/MapScreen';
+
 export type RootStackParamList = {
 	Home: undefined;
 	Details: undefined;
@@ -24,6 +23,23 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
+	React.useEffect(() => {
+		const requestPermission = async () => {
+			try {
+				const permission = await requestStartUpPermission();
+				if (
+					permission &&
+					permission['android.permission.ACCESS_FINE_LOCATION'] === 'granted'
+				) {
+					requestStartUpPermission();
+				}
+			} catch (error) {
+				console.error('Error requesting permission:', error);
+			}
+		};
+		requestPermission();
+	}, []);
+
 	return (
 		<NavigationContainer>
 			<Stack.Navigator
