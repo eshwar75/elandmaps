@@ -1,7 +1,11 @@
 import Geolocation from 'react-native-geolocation-service';
 import { PermissionsAndroid } from 'react-native';
+import { StoreObject } from '../../services/usage';
+import { keys } from '../../services/usage/keytypes';
 
-export const getCurrentLocation = async () => {
+export const getCurrentLocation = async (
+	sendLocation: (location: any) => void
+) => {
 	try {
 		const granted = await PermissionsAndroid.check(
 			PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
@@ -9,8 +13,12 @@ export const getCurrentLocation = async () => {
 		console.log(`granted location ${granted}`);
 		if (granted) {
 			Geolocation.getCurrentPosition(
-				position => {
+				(position: any) => {
+					const { latitude, longitude } = position.coords;
+					const location = { latitude, longitude, timestamp: Date.now() };
 					console.log(`granted location success ${position}`);
+					StoreObject(keys.presentLocation, location);
+					sendLocation(location);
 				},
 				error => {
 					console.log(error.code, error.message);
@@ -20,8 +28,13 @@ export const getCurrentLocation = async () => {
 		} else {
 			console.log('granted location failed');
 			Geolocation.getCurrentPosition(
-				position => {
+				(position: any) => {
 					console.log(`granted location failed ${position}`);
+					const { latitude, longitude } = position.coords;
+					const location = { latitude, longitude, timestamp: Date.now() };
+					console.log(`granted location success ${position}`);
+					StoreObject(keys.presentLocation, location);
+					sendLocation(location);
 				},
 				error => {
 					console.log(error.code, error.message);
@@ -39,9 +52,9 @@ export const startLocationTracking = (
 ) => {
 	try {
 		Geolocation.watchPosition(
-			position => {
+			(position: any) => {
 				console.log(`Location updated: ${position.coords}`);
-				const { latitude, longitude } = position.coords;
+				const { latitude, longitude } = position?.coords;
 				const location = { latitude, longitude, timestamp: Date.now() };
 				sendLocation(location);
 			},
@@ -51,8 +64,8 @@ export const startLocationTracking = (
 			{
 				enableHighAccuracy: true,
 				distanceFilter: 0,
-				interval: 5000, // Update every 5 seconds
-				fastestInterval: 2000, // Fastest update every 2 seconds
+				interval: 5000,
+				fastestInterval: 2000,
 				showLocationDialog: true,
 			}
 		);

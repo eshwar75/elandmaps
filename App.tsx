@@ -11,16 +11,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
 import { requestStartUpPermission } from './src/Utils';
-import MapScreen from './src/screens/MapScreen';
-
-export type RootStackParamList = {
-	Home: undefined;
-	Details: undefined;
-	LiveTrackingMap: undefined;
-	MapScreen: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { HomeNavigator } from './src/home-navigator';
+import { LocalStoreContextProvider } from './src/context/LocalStoreContext';
 
 function App() {
 	React.useEffect(() => {
@@ -42,14 +34,9 @@ function App() {
 
 	return (
 		<NavigationContainer>
-			<Stack.Navigator
-				screenOptions={{ animation: 'none', headerShown: false }}
-				initialRouteName="Home"
-			>
-				<Stack.Screen name="Home" component={HomeScreen} />
-				<Stack.Screen name="Details" component={DetailsScreen} />
-				<Stack.Screen name="MapScreen" component={MapScreen} />
-			</Stack.Navigator>
+			<LocalStoreContextProvider>
+				<HomeNavigator />
+			</LocalStoreContextProvider>
 		</NavigationContainer>
 	);
 }
