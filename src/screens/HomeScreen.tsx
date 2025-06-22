@@ -24,10 +24,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 					Alert.alert('Permission Denied', 'Location access is required.');
 					return;
 				} else {
-					console.log('Permission granted');
 					getCurrentLocation((location: any) => {
-						// setLocations(prev => [...prev, location]);
-						// setLocations([...locations, location]);
 						updateCurrentPosition(location);
 					});
 				}

@@ -29,26 +29,50 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		searchStartPoint,
 		searchEndPoint,
 		startPointDetails,
+		markersPosition,
 		endPointDetails,
 		updateSearchStartPoint,
 		updateSearchEndPoint,
 		updateStatePointDetails,
 		updateEndPointDetails,
+		selectedStartPoint,
+		selectedEndPoint,
+		getPolylinePointValues,
 	} = useContext(LocalStoreContext);
 	const startPointValue = useDebounce(searchStartPoint, 1500);
 	const endPointValue = useDebounce(searchEndPoint, 500);
 	const [loading, setLoading] = useState(false);
 	const [hasMore, setHasMore] = useState(true);
 
+	// const handleStartSelection = (selectedValue: {}) => {
+	// 	selectedStartPoint && selectedStartPoint(selectedValue);
+	// 	if (updateStatePointDetails) {
+	// 		updateStatePointDetails([]);
+	// 	}
+	// 	// setTimeout(() => {
+	// 	// 	navigation.navigate('MapScreen');
+	// 	// }, 2000);
+	// };
+
+	// const handleEndSelection = (selectedValue: {}) => {
+	// 	selectedEndPoint && selectedEndPoint(selectedValue);
+	// 	if (updateEndPointDetails) {
+	// 		updateEndPointDetails([]);
+	// 	}
+	// 	// setTimeout(() => {
+	// 	// 	navigation.navigate('MapScreen');
+	// 	// }, 2000);
+	// };
+
 	useEffect(() => {
-		if (startPointValue.length > 3) {
-			getStartPointValues(startPointValue);
-		}
+		// if (startPointValue.length > 3) {
+		getStartPointValues(startPointValue);
+		// }
 	}, [startPointValue]);
 	useEffect(() => {
-		if (endPointValue.length > 3) {
-			getEndPointValues(endPointValue);
-		}
+		// if (endPointValue.length > 3) {
+		getEndPointValues(endPointValue);
+		// }
 	}, [endPointValue]);
 
 	const getStartPointValues = async (value: string) => {
@@ -67,16 +91,6 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			{/* <TouchableOpacity
-				onPress={() => navigation.navigate('MapScreen')}
-				style={[styles.buttonContainer, { left: 10 }]}
-			>
-				<View style={styles.cardTextContainer}>
-					<Text>Back</Text>
-				</View>
-			</TouchableOpacity> */}
-			{/* <View style={{ top: 60 }}> */}
-			{/* <View style={styles.container}> */}
 			<TextInput
 				style={styles.input}
 				onChangeText={updateSearchStartPoint}
@@ -91,12 +105,44 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 				placeholder="End Point"
 				keyboardType="default"
 			/>
+			<TouchableOpacity
+				onPress={() => {
+					if (updateStatePointDetails) {
+						updateStatePointDetails([]);
+					}
+					if (updateEndPointDetails) {
+						updateEndPointDetails([]);
+					}
+					getPolylinePointValues &&
+						markersPosition &&
+						markersPosition[0]?.geometry?.coordinates &&
+						markersPosition[1]?.geometry?.coordinates &&
+						getPolylinePointValues(
+							markersPosition[0]?.geometry?.coordinates[1],
+							markersPosition[0]?.geometry?.coordinates[0],
+							markersPosition[1]?.geometry?.coordinates[1],
+							markersPosition[1]?.geometry?.coordinates[0]
+						);
+					setTimeout(() => {
+						navigation.navigate('MapScreen');
+					}, 2000);
+				}}
+				style={styles.buttonNormalContainer}
+			>
+				<View style={styles.buttonNormalTextContainer}>
+					<Text style={styles.buttonText}>Search</Text>
+				</View>
+			</TouchableOpacity>
+
 			{Array.isArray(startPointDetails) && startPointDetails.length > 0 && (
 				<View style={styles.listContainer}>
 					<FlatList
 						data={startPointDetails}
 						renderItem={({ item }) => (
-							<TouchableOpacity style={{ padding: 16 }}>
+							<TouchableOpacity
+								style={{ padding: 16 }}
+								onPress={() => selectedStartPoint && selectedStartPoint(item)}
+							>
 								{item.BUILDING && item.BUILDING.toLowerCase() !== 'nil' && (
 									<Text style={styles.listTitle}>{item.BUILDING}</Text>
 								)}
@@ -122,7 +168,10 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					<FlatList
 						data={endPointDetails}
 						renderItem={({ item }) => (
-							<TouchableOpacity style={{ padding: 16 }}>
+							<TouchableOpacity
+								style={{ padding: 16 }}
+								onPress={() => selectedEndPoint && selectedEndPoint(item)}
+							>
 								{item.BUILDING && item.BUILDING.toLowerCase() !== 'nil' && (
 									<Text style={styles.listTitle}>{item.BUILDING}</Text>
 								)}
@@ -144,14 +193,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 			)}
 
 			{/* </View> */}
-			{/* <TouchableOpacity
-				onPress={() => navigation.navigate('MapScreen')}
-				style={styles.buttonNormalContainer}
-			>
-				<View style={styles.buttonNormalTextContainer}>
-					<Text style={styles.buttonText}>Search</Text>
-				</View>
-			</TouchableOpacity> */}
+
 			{/* </View> */}
 		</SafeAreaView>
 	);
@@ -209,8 +251,8 @@ const styles = StyleSheet.create({
 	buttonNormalContainer: {
 		backgroundColor: 'blue',
 		borderRadius: 5,
-		margin: 10,
-		width: '50%',
+		marginVertical: 20,
+		width: 'auto',
 	},
 	buttonNormalTextContainer: {
 		padding: 10,

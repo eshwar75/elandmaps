@@ -3,21 +3,6 @@ export async function getLocationCoordinates(
 	pageNumber?: string
 ) {
 	console.log('Fetching location coordinates for:', query);
-	// try {
-	// 	const response = await fetch(
-	// 		`https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${encodeURIComponent(
-	// 			query
-	// 		)}&returnGeom=Y&getAddrDetails=Y&pageNum=1`
-	// 	);
-	// 	if (!response.ok) {
-	// 		throw new Error(`HTTP error! Status: ${response.status}`);
-	// 	}
-	// 	const data = await response.json();
-	// 	return data;
-	// } catch (error) {
-	// 	console.log('Fetch error:', error);
-	// 	return null;
-	// }
 	if (!query) {
 		return;
 	}
@@ -41,6 +26,41 @@ export async function getLocationCoordinates(
 		return data?.results || [];
 	} catch (error) {
 		console.error('API Error:', error);
+	}
+}
+
+const isValidCoordinate = (coord: string) =>
+	!isNaN(parseFloat(coord)) && isFinite(+coord);
+
+export async function getDrivingRouteCoordinates(
+	startLng: string,
+	startLat: string,
+	endLng: string,
+	endLat: string
+) {
+	console.log(
+		`startLng: ${startLng} startLat: ${startLat} endLng: ${endLng} endLat: ${endLat}`
+	);
+
+	const coords = [startLng, startLat, endLng, endLat];
+	if (coords.some(coord => !isValidCoordinate(coord))) {
+		console.warn('Invalid coordinates');
+		return;
+	}
+
+	const url = `http://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+	try {
+		const response = await fetch(url);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! Status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		return data?.routes?.[0]?.geometry?.coordinates || [];
+	} catch (error) {
+		console.error('API getDrivingRouteCoordinates Error:', error);
 	}
 }
 
