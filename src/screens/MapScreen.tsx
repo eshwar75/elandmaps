@@ -1,13 +1,24 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
+import {
+	View,
+	StyleSheet,
+	Alert,
+	Text,
+	TouchableOpacity,
+	StatusBar,
+} from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import { requestStartUpPermission, startLocationTracking } from '../Utils';
 import { GetStoredDetails } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { RootStackParamList } from '../home-navigator';
-import { LocalStoreContext } from '../context/LocalStoreContext';
+import {
+	LocalStoreContext,
+	SearchPointType,
+} from '../context/LocalStoreContext';
 import { getDrivingRouteCoordinates } from '../services/api/locations';
+import { useNetwork } from '../context';
 
 type MapScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -28,18 +39,22 @@ const MapScreen: React.FC<Props> = props => {
 		updateMarkersPosition,
 		updateCurrentPosition,
 		updateIsShowUserLocation,
+		updateselectedPoints,
+		updateSearchPoint,
 	} = useContext(LocalStoreContext) as {
 		polylines: any;
 		markersPosition: any[];
 		currentPosition: any;
 		isShowUserLocation: boolean;
-		updatePolylines: (location: any) => void;
+		updatePolylines: (location: any, localStroageRequired?: boolean) => void;
 		updateMarkersPosition: (location: any) => void;
 		updateCurrentPosition: (location: any) => void;
 		updateIsShowUserLocation: (show: boolean) => void;
+		updateselectedPoints: (details: {}) => void;
+		updateSearchPoint?: (points: SearchPointType) => void;
 	};
 	const mapRef = useRef<MapView | null>(null);
-
+	const { isConnected } = useNetwork();
 	useEffect(() => {
 		const init = async () => {
 			const hasPermission = await requestStartUpPermission();
@@ -47,8 +62,20 @@ const MapScreen: React.FC<Props> = props => {
 				Alert.alert('Permission Denied', 'Location access is required.');
 				return;
 			}
+			if (!isConnected) {
+				const searchPoints = await GetStoredDetails(keys.searchPoints);
+				const selectedPoints = await GetStoredDetails(keys.selectedPoints);
+				const polylinePoints = await GetStoredDetails(keys.polylinePoints);
+				console.log(
+					`searchPoints ${searchPoints} selectedPoints: ${selectedPoints} polylinePoints: ${polylinePoints}`
+				);
+				if (updateSearchPoint) {
+					updateSearchPoint(searchPoints);
+				}
+				updateselectedPoints(selectedPoints);
+				updatePolylines(polylinePoints, true);
+			}
 			// Load saved route
-			const savedLocations = await GetStoredDetails(keys.presentLocation);
 			// Start tracking
 			if (updateIsShowUserLocation) {
 				updateIsShowUserLocation(true);
@@ -57,15 +84,14 @@ const MapScreen: React.FC<Props> = props => {
 				// setLocations(prev => [...prev, location]);
 				if (location) {
 					getPolylinePointValues();
-					// updateMarkersPosition(location);
-					// updateCurrentPosition(location);
 				} else {
-					updateCurrentPosition(savedLocations);
+					// updateCurrentPosition(savedLocations);
 				}
 			});
 		};
 		init();
 	}, []);
+
 	useEffect(() => {
 		if (
 			mapRef.current &&
@@ -95,9 +121,7 @@ const MapScreen: React.FC<Props> = props => {
 			markersPosition[0]?.geometry?.coordinates &&
 			Array.isArray(markersPosition[0]?.geometry?.coordinates) &&
 			markersPosition[1]?.geometry?.coordinates &&
-			Array.isArray(markersPosition[1]?.geometry?.coordinates) &&
-			markersPosition[0]?.geometry?.coordinates.length === 2 &&
-			markersPosition[1]?.geometry?.coordinates.length === 2
+			Array.isArray(markersPosition[1]?.geometry?.coordinates)
 		) {
 			const startLng = String(markersPosition[0].geometry.coordinates[1]);
 			const startLat = String(markersPosition[0].geometry.coordinates[0]);
@@ -190,7 +214,7 @@ const styles = StyleSheet.create({
 	},
 	buttonContainer: {
 		position: 'absolute',
-		top: 10,
+		top: 50,
 		zIndex: 1,
 	},
 });

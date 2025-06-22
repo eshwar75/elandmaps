@@ -3,10 +3,16 @@ import {
 	convertGeojsonSinglePoint,
 	convertGeojsonPolyLines,
 } from '../Utils/convertGeoJson';
+import { StoreObject } from '../services/usage';
+import { keys } from '../services/usage/keytypes';
 
 export type LocationTypes = {
 	latitude: number;
 	longitude: number;
+};
+export type SearchPointType = {
+	startPoint: string;
+	endPoint: string;
 };
 type converJsonType = {
 	type: 'Feature';
@@ -29,7 +35,7 @@ interface LocalStoreContextProps {
 	selectedEndPointValue?: {};
 
 	// actions
-	updatePolylines: (newPolyline: any) => void;
+	updatePolylines: (newPolyline: any, localStroageRequired?: boolean) => void;
 	updateMarkersPosition: (newMarker: any) => void;
 	updateCurrentPosition: (newPosition: any) => void;
 	updateIsShowUserLocation?: (show: boolean) => void;
@@ -39,6 +45,8 @@ interface LocalStoreContextProps {
 	updateEndPointDetails?: (details: any[]) => void;
 	selectedStartPoint?: (details: {}) => void;
 	selectedEndPoint?: (details: {}) => void;
+	updateselectedPoints?: (details: {}) => void;
+	updateSearchPoint?: (points: SearchPointType) => void;
 }
 export const LocalStoreContext = React.createContext(
 	{} as LocalStoreContextProps
@@ -61,8 +69,18 @@ export const LocalStoreContextProvider: React.FC<
 	const [resetStartValue, setResetStartValue] = useState(false);
 	const [resetEndValue, setResetEndValue] = useState(false);
 
-	const updatePolylines = (newPolylineData?: any) => {
+	const updatePolylines = (
+		newPolylineData: any,
+		localStroageRequired?: boolean
+	) => {
 		if (Array.isArray(newPolylineData) && newPolylineData[0].length > 0) {
+			if (!localStroageRequired) {
+				StoreObject(`${keys.polylinePoints}`, newPolylineData);
+				StoreObject(`${keys.selectedPoints}`, {
+					startPoint: selectedStartPointValue,
+					endPoint: selectedEndPointValue,
+				});
+			}
 			const convertedData = newPolylineData.map((coords: number[]) => {
 				const [lng, lat] = coords;
 				return { latitude: lat, longitude: lng };
@@ -86,7 +104,6 @@ export const LocalStoreContextProvider: React.FC<
 
 	const updateMarkersPosition = (newMarker: any) => {
 		const markerPositionPoint = convertGeojsonSinglePoint(newMarker, 'Point');
-		
 		setMarkersPosition((prev: any) =>
 			prev ? [...prev, markerPositionPoint] : [markerPositionPoint]
 		);
@@ -98,6 +115,11 @@ export const LocalStoreContextProvider: React.FC<
 			'Point'
 		);
 		setCurrentPosition(currentPositionPoint);
+	};
+
+	const updateSearchPoint = (points: SearchPointType) => {
+		updateSearchStartPoint(points.startPoint);
+		updateSearchEndPoint(points.endPoint);
 	};
 
 	const updateSearchStartPoint = (value: string) => {
@@ -128,6 +150,12 @@ export const LocalStoreContextProvider: React.FC<
 		} else {
 			setEndPointDetails([...new Set([...endPointDetails, ...details])]);
 		}
+	};
+
+	const updateselectedPoints = (selectedValue: any) => {
+		console.log('selectedValue', selectedValue);
+		selectedStartPoint(selectedValue?.startPoint);
+		selectedEndPoint(selectedValue?.endPoint);
 	};
 
 	const selectedStartPoint = (selectedValue: any) => {
@@ -180,6 +208,8 @@ export const LocalStoreContextProvider: React.FC<
 				updateEndPointDetails,
 				selectedStartPoint,
 				selectedEndPoint,
+				updateselectedPoints,
+				updateSearchPoint,
 			}}
 		>
 			{children}

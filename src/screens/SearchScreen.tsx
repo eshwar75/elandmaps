@@ -1,12 +1,12 @@
 import React, { useContext, useEffect } from 'react';
 import {
 	TextInput,
-	SafeAreaView,
 	StyleSheet,
 	TouchableOpacity,
 	View,
 	Text,
 	FlatList,
+	StatusBar,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../home-navigator';
@@ -16,6 +16,7 @@ import { getLocationCoordinates } from '../services/api/locations';
 import { StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { ButtonOpacity, CardButtonOpacity } from '../components';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -67,78 +68,83 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<TextInput
-				style={styles.input}
-				onChangeText={updateSearchStartPoint}
-				value={searchStartPoint}
-				placeholder="Start point"
-				keyboardType="default"
-			/>
-			<TextInput
-				style={styles.input}
-				onChangeText={updateSearchEndPoint}
-				value={searchEndPoint}
-				placeholder="End Point"
-				keyboardType="default"
-			/>
-			<ButtonOpacity
-				onPress={async () => {
-					if (updateStatePointDetails) {
-						updateStatePointDetails([]);
-					}
-					if (updateEndPointDetails) {
-						updateEndPointDetails([]);
-					}
-					StoreObject(`${keys.searchPoints}`, {
-						startPoint: searchStartPoint,
-						endPoint: searchEndPoint,
-					});
-					setTimeout(() => {
-						navigation.navigate('MapScreen');
-					}, 2000);
-				}}
-				title="Search"
-			/>
-
-			{Array.isArray(startPointDetails) && startPointDetails.length > 0 && (
-				<View style={styles.listContainer}>
-					<FlatList
-						data={startPointDetails}
-						renderItem={({ item }) => (
-							<CardButtonOpacity
-								onPress={() => selectedStartPoint && selectedStartPoint(item)}
-								title={
-									item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
-								}
-								subTitle={item.ADDRESS || ''}
-							/>
-						)}
-						keyExtractor={(item, index) =>
-							item.id?.toString() || index.toString()
+			<StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+			<View style={{ flex: 1, padding: 20, alignItems: 'center' }}>
+				<TextInput
+					style={styles.input}
+					onChangeText={updateSearchStartPoint}
+					value={searchStartPoint}
+					placeholder="Start point"
+					keyboardType="default"
+					placeholderTextColor="#ffffff"
+				/>
+				<TextInput
+					style={styles.input}
+					onChangeText={updateSearchEndPoint}
+					value={searchEndPoint}
+					placeholder="End Point"
+					keyboardType="default"
+					placeholderTextColor="#ffffff"
+				/>
+				<ButtonOpacity
+					onPress={async () => {
+						if (updateStatePointDetails) {
+							updateStatePointDetails([]);
 						}
-					/>
-				</View>
-			)}
-
-			{Array.isArray(endPointDetails) && endPointDetails.length > 0 && (
-				<View style={styles.listContainer}>
-					<FlatList
-						data={endPointDetails}
-						renderItem={({ item }) => (
-							<CardButtonOpacity
-								onPress={() => selectedEndPoint && selectedEndPoint(item)}
-								title={
-									item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
-								}
-								subTitle={item.ADDRESS || ''}
-							/>
-						)}
-						keyExtractor={(item, index) =>
-							item.id?.toString() || index.toString()
+						if (updateEndPointDetails) {
+							updateEndPointDetails([]);
 						}
-					/>
-				</View>
-			)}
+						StoreObject(`${keys.searchPoints}`, {
+							startPoint: searchStartPoint,
+							endPoint: searchEndPoint,
+						});
+						setTimeout(() => {
+							navigation.navigate('MapScreen');
+						}, 2000);
+					}}
+					title="Search"
+				/>
+
+				{Array.isArray(startPointDetails) && startPointDetails.length > 0 && (
+					<View style={styles.listContainer}>
+						<FlatList
+							data={startPointDetails}
+							renderItem={({ item }) => (
+								<CardButtonOpacity
+									onPress={() => selectedStartPoint && selectedStartPoint(item)}
+									title={
+										item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
+									}
+									subTitle={item.ADDRESS || ''}
+								/>
+							)}
+							keyExtractor={(item, index) =>
+								item.id?.toString() || index.toString()
+							}
+						/>
+					</View>
+				)}
+
+				{Array.isArray(endPointDetails) && endPointDetails.length > 0 && (
+					<View style={styles.listContainer}>
+						<FlatList
+							data={endPointDetails}
+							renderItem={({ item }) => (
+								<CardButtonOpacity
+									onPress={() => selectedEndPoint && selectedEndPoint(item)}
+									title={
+										item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
+									}
+									subTitle={item.ADDRESS || ''}
+								/>
+							)}
+							keyExtractor={(item, index) =>
+								item.id?.toString() || index.toString()
+							}
+						/>
+					</View>
+				)}
+			</View>
 		</SafeAreaView>
 	);
 };
@@ -146,14 +152,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 export default SearchScreen;
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		// justifyContent: 'center',
-		// alignItems: 'center',
-		// top: 60,
-		marginInline: 20,
-		marginBlock: 10,
-	},
+	container: { flex: 1 },
 	listContainer: {
 		flex: 1,
 		justifyContent: 'center',
@@ -169,14 +168,11 @@ const styles = StyleSheet.create({
 		paddingBlock: 30,
 		borderRadius: 5,
 		width: '100%',
-	},
-	buttonContainer: {
-		// position: 'absolute',
-		// top: 10,
-		// zIndex: 1,
+		backgroundColor: '#1a1a1a',
+		color: '#ffffff',
 	},
 	cardTextContainer: {
-		backgroundColor: 'white',
+		backgroundColor: '#FFFFFF',
 		padding: 10,
 		borderRadius: 5,
 		elevation: 3,
@@ -190,7 +186,6 @@ const styles = StyleSheet.create({
 	buttonNormalTextContainer: {
 		padding: 10,
 		borderRadius: 5,
-		// elevation: 3,
 	},
-	buttonText: { color: 'white', textAlign: 'center', fontWeight: '600' },
+	buttonText: { color: 'white', textAlign: 'center', fontWeight: 600 },
 });
