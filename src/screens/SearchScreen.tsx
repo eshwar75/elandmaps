@@ -13,6 +13,9 @@ import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
 import useDebounce from '../hooks/useDebounce';
 import { getLocationCoordinates } from '../services/api/locations';
+import { StoreObject } from '../services/usage';
+import { keys } from '../services/usage/keytypes';
+import { ButtonOpacity, CardButtonOpacity } from '../components';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -37,8 +40,8 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		selectedStartPoint,
 		selectedEndPoint,
 	} = useContext(LocalStoreContext);
-	const startPointValue = useDebounce(searchStartPoint, 1500);
-	const endPointValue = useDebounce(searchEndPoint, 500);
+	const startPointValue = useDebounce(searchStartPoint, 1000);
+	const endPointValue = useDebounce(searchEndPoint, 1000);
 
 	useEffect(() => {
 		getStartPointValues(startPointValue);
@@ -78,39 +81,37 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 				placeholder="End Point"
 				keyboardType="default"
 			/>
-			<TouchableOpacity
-				onPress={() => {
+			<ButtonOpacity
+				onPress={async () => {
 					if (updateStatePointDetails) {
 						updateStatePointDetails([]);
 					}
 					if (updateEndPointDetails) {
 						updateEndPointDetails([]);
 					}
+					StoreObject(`${keys.searchPoints}`, {
+						startPoint: searchStartPoint,
+						endPoint: searchEndPoint,
+					});
 					setTimeout(() => {
 						navigation.navigate('MapScreen');
 					}, 2000);
 				}}
-				style={styles.buttonNormalContainer}
-			>
-				<View style={styles.buttonNormalTextContainer}>
-					<Text style={styles.buttonText}>Search</Text>
-				</View>
-			</TouchableOpacity>
+				title="Search"
+			/>
 
 			{Array.isArray(startPointDetails) && startPointDetails.length > 0 && (
 				<View style={styles.listContainer}>
 					<FlatList
 						data={startPointDetails}
 						renderItem={({ item }) => (
-							<TouchableOpacity
-								style={{ padding: 16 }}
+							<CardButtonOpacity
 								onPress={() => selectedStartPoint && selectedStartPoint(item)}
-							>
-								{item.BUILDING && item.BUILDING.toLowerCase() !== 'nil' && (
-									<Text style={styles.listTitle}>{item.BUILDING}</Text>
-								)}
-								<Text style={styles.listSubTitle}>{item.ADDRESS || '-'}</Text>
-							</TouchableOpacity>
+								title={
+									item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
+								}
+								subTitle={item.ADDRESS || ''}
+							/>
 						)}
 						keyExtractor={(item, index) =>
 							item.id?.toString() || index.toString()
@@ -124,15 +125,13 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					<FlatList
 						data={endPointDetails}
 						renderItem={({ item }) => (
-							<TouchableOpacity
-								style={{ padding: 16 }}
+							<CardButtonOpacity
 								onPress={() => selectedEndPoint && selectedEndPoint(item)}
-							>
-								{item.BUILDING && item.BUILDING.toLowerCase() !== 'nil' && (
-									<Text style={styles.listTitle}>{item.BUILDING}</Text>
-								)}
-								<Text style={styles.listSubTitle}>{item.ADDRESS || '-'}</Text>
-							</TouchableOpacity>
+								title={
+									item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
+								}
+								subTitle={item.ADDRESS || ''}
+							/>
 						)}
 						keyExtractor={(item, index) =>
 							item.id?.toString() || index.toString()
@@ -161,17 +160,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: 'rgb(209, 155, 155)',
 		marginHorizontal: 20,
-	},
-	listTitle: {
-		// color: 'rgb(209, 207, 201)',
-		color: '#FFFFFF',
-		fontSize: 14,
-		fontWeight: 600,
-	},
-	listSubTitle: {
-		color: '#FFFFFF',
-		fontSize: 12,
-		fontWeight: 500,
 	},
 	input: {
 		height: 40,
