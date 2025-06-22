@@ -4,7 +4,8 @@
  *
  * @format
  */
-
+import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { requestStartUpPermission } from './src/Utils';
@@ -38,7 +39,9 @@ function App() {
 			<NavigationContainer>
 				<NetworkProvider>
 					<LocalStoreContextProvider>
-						<HomeNavigator />
+						<GestureHandlerRootView style={{ flex: 1 }}>
+							<HomeNavigator />
+						</GestureHandlerRootView>
 					</LocalStoreContextProvider>
 				</NetworkProvider>
 			</NavigationContainer>
