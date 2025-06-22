@@ -1,10 +1,11 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet, StatusBar } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getCurrentLocation, requestStartUpPermission } from '../Utils';
 import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
 import { ButtonOpacity } from '../components';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -37,7 +38,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 	}, []);
 
 	return (
-		<View style={styles.container}>
+		<SafeAreaView style={styles.container}>
+			<StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
 			<ButtonOpacity
 				onPress={() => navigation.navigate('Details')}
 				title="Details"
@@ -46,7 +48,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 				onPress={() => navigation.navigate('MapScreen')}
 				title="Maps"
 			/>
-		</View>
+		</SafeAreaView>
 	);
 };
 
