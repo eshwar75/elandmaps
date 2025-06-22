@@ -38,10 +38,6 @@ export async function getDrivingRouteCoordinates(
 	endLng: string,
 	endLat: string
 ) {
-	console.log(
-		`startLng: ${startLng} startLat: ${startLat} endLng: ${endLng} endLat: ${endLat}`
-	);
-
 	const coords = [startLng, startLat, endLng, endLat];
 	if (coords.some(coord => !isValidCoordinate(coord))) {
 		console.warn('Invalid coordinates');
@@ -60,7 +56,7 @@ export async function getDrivingRouteCoordinates(
 		const data = await response.json();
 		return data?.routes?.[0]?.geometry?.coordinates || [];
 	} catch (error) {
-		console.error('API getDrivingRouteCoordinates Error:', error);
+		console.log('API getDrivingRouteCoordinates Error:', error);
 	}
 }
 

@@ -17,37 +17,14 @@ export const convertGeojsonSinglePoint = (data: any, typeName: string) => {
 };
 
 export const convertGeojsonPolyLines = (
-	data: any,
+	objectData: any,
 	typeName: string,
 	name: string
 ) => {
-	return objectData = data.map((value: number[]) => ({
-		latitude: value[0],
-		longitude: value[1],
-	}));
-
-	// return {
-	// 	type: 'Feature',
-	// 	timestamp: Date.now(),
-	// 	geometry: { type: typeName, coordinates: objectData },
-	// 	properties: { name: name },
-	// };
+	return {
+		type: 'Feature',
+		timestamp: new Date().toISOString(),
+		geometry: { type: typeName, coordinates: objectData },
+		properties: { name: name },
+	};
 };
-
-// const convertGeojsonPoint = (data: any, name) => {
-// 	const objectData = data.map(value => ({
-// 		latitude: value[0],
-// 		longitude: value[1],
-// 	}));
-// 	console.log(objectData);
-
-// 	return {
-// 		type: 'Feature',
-// 		timestamp: Date.now(),
-// 		geometry: {
-// 			type: 'Point',
-// 			coordinates: objectData,
-// 		},
-// 		properties: { name: name },
-// 	};
-// };
