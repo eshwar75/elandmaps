@@ -1,9 +1,10 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Alert, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getCurrentLocation, requestStartUpPermission } from '../Utils';
 import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
+import { ButtonOpacity } from '../components';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -37,22 +38,14 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
 	return (
 		<View style={styles.container}>
-			<TouchableOpacity
+			<ButtonOpacity
 				onPress={() => navigation.navigate('Details')}
-				style={styles.buttonContainer}
-			>
-				<View style={styles.cardTextContainer}>
-					<Text style={styles.buttonText}>Details</Text>
-				</View>
-			</TouchableOpacity>
-			<TouchableOpacity
+				title="Details"
+			/>
+			<ButtonOpacity
 				onPress={() => navigation.navigate('MapScreen')}
-				style={styles.buttonContainer}
-			>
-				<View style={styles.cardTextContainer}>
-					<Text style={styles.buttonText}>Maps</Text>
-				</View>
-			</TouchableOpacity>
+				title="Maps"
+			/>
 		</View>
 	);
 };
@@ -61,17 +54,4 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
 	container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-	mapContainer: { flex: 1 },
-	cardTextContainer: {
-		padding: 10,
-		borderRadius: 5,
-		elevation: 3,
-	},
-	buttonContainer: {
-		backgroundColor: 'blue',
-		borderRadius: 5,
-		margin: 10,
-		width: '50%',
-	},
-	buttonText: { color: 'white', textAlign: 'center', fontWeight: '600' },
 });
