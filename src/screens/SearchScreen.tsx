@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
 	TextInput,
 	SafeAreaView,
@@ -7,7 +7,6 @@ import {
 	View,
 	Text,
 	FlatList,
-	ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../home-navigator';
@@ -37,42 +36,16 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		updateEndPointDetails,
 		selectedStartPoint,
 		selectedEndPoint,
-		getPolylinePointValues,
 	} = useContext(LocalStoreContext);
 	const startPointValue = useDebounce(searchStartPoint, 1500);
 	const endPointValue = useDebounce(searchEndPoint, 500);
-	const [loading, setLoading] = useState(false);
-	const [hasMore, setHasMore] = useState(true);
-
-	// const handleStartSelection = (selectedValue: {}) => {
-	// 	selectedStartPoint && selectedStartPoint(selectedValue);
-	// 	if (updateStatePointDetails) {
-	// 		updateStatePointDetails([]);
-	// 	}
-	// 	// setTimeout(() => {
-	// 	// 	navigation.navigate('MapScreen');
-	// 	// }, 2000);
-	// };
-
-	// const handleEndSelection = (selectedValue: {}) => {
-	// 	selectedEndPoint && selectedEndPoint(selectedValue);
-	// 	if (updateEndPointDetails) {
-	// 		updateEndPointDetails([]);
-	// 	}
-	// 	// setTimeout(() => {
-	// 	// 	navigation.navigate('MapScreen');
-	// 	// }, 2000);
-	// };
 
 	useEffect(() => {
-		// if (startPointValue.length > 3) {
 		getStartPointValues(startPointValue);
-		// }
 	}, [startPointValue]);
+
 	useEffect(() => {
-		// if (endPointValue.length > 3) {
 		getEndPointValues(endPointValue);
-		// }
 	}, [endPointValue]);
 
 	const getStartPointValues = async (value: string) => {
@@ -113,16 +86,6 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					if (updateEndPointDetails) {
 						updateEndPointDetails([]);
 					}
-					getPolylinePointValues &&
-						markersPosition &&
-						markersPosition[0]?.geometry?.coordinates &&
-						markersPosition[1]?.geometry?.coordinates &&
-						getPolylinePointValues(
-							markersPosition[0]?.geometry?.coordinates[1],
-							markersPosition[0]?.geometry?.coordinates[0],
-							markersPosition[1]?.geometry?.coordinates[1],
-							markersPosition[1]?.geometry?.coordinates[0]
-						);
 					setTimeout(() => {
 						navigation.navigate('MapScreen');
 					}, 2000);
@@ -152,13 +115,6 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						keyExtractor={(item, index) =>
 							item.id?.toString() || index.toString()
 						}
-						// onEndReached={() => getLocationCoordinates(startPointValue)}
-						// onEndReachedThreshold={0.5}
-						// ListFooterComponent={() => {
-						// 	return loading ? (
-						// 		<ActivityIndicator style={{ margin: 10 }} />
-						// 	) : null;
-						// }}
 					/>
 				</View>
 			)}
@@ -181,20 +137,9 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						keyExtractor={(item, index) =>
 							item.id?.toString() || index.toString()
 						}
-						// onEndReached={() => getLocationCoordinates(startPointValue)}
-						// onEndReachedThreshold={0.5}
-						// ListFooterComponent={() => {
-						// 	return loading ? (
-						// 		<ActivityIndicator style={{ margin: 10 }} />
-						// 	) : null;
-						// }}
 					/>
 				</View>
 			)}
-
-			{/* </View> */}
-
-			{/* </View> */}
 		</SafeAreaView>
 	);
 };

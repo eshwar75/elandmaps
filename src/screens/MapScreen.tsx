@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { View, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MapView, { Polyline, Marker } from 'react-native-maps';
@@ -7,7 +7,6 @@ import { GetStoredDetails } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
-import { useNavigation } from '@react-navigation/native';
 import { getDrivingRouteCoordinates } from '../services/api/locations';
 
 type MapScreenNavigationProp = NativeStackNavigationProp<
@@ -40,55 +39,33 @@ const MapScreen: React.FC<Props> = props => {
 		updateIsShowUserLocation: (show: boolean) => void;
 	};
 	const mapRef = useRef<MapView | null>(null);
-	const navigation = useNavigation();
 
-	// const [locations, setLocations] = useState<any[]>([]);
-	// const [markersPosition, setMarkersPosition] = useState<
-	// 	| {
-	// 			latitude: number;
-	// 			longitude: number;
-	// 			timestamp: number;
-	// 	  }[]
-	// 	| null
-	// >(null);
-	// const [currentPosition, setCurrentPosition] = useState<{
-	// 	latitude: number;
-	// 	longitude: number;
-	// 	timestamp: number;
-	// } | null>(null);
-
-	// useEffect(() => {
-	// 	const init = async () => {
-	// 		const hasPermission = await requestStartUpPermission();
-	// 		if (!hasPermission) {
-	// 			Alert.alert('Permission Denied', 'Location access is required.');
-	// 			return;
-	// 		}
-	// 		// Load saved route
-	// 		const savedLocations = await GetStoredDetails(keys.presentLocation);
-	// 		// Start tracking
-	// 		if (updateIsShowUserLocation) {
-	// 			updateIsShowUserLocation(true);
-	// 		}
-	// 		startLocationTracking((location: any) => {
-	// 			// setLocations(prev => [...prev, location]);
-	// 			if (location) {
-	// 				updatePolylines(location);
-	// 				// updateMarkersPosition(location);
-	// 				// updateCurrentPosition(location);
-	// 			} else {
-	// 				// updateCurrentPosition(savedLocations);
-	// 			}
-	// 		});
-	// 	};
-	// 	init();
-	// }, []);
 	useEffect(() => {
-		if (updatePolylines) {
-			updatePolylines(currentPosition);
-		}
+		const init = async () => {
+			const hasPermission = await requestStartUpPermission();
+			if (!hasPermission) {
+				Alert.alert('Permission Denied', 'Location access is required.');
+				return;
+			}
+			// Load saved route
+			const savedLocations = await GetStoredDetails(keys.presentLocation);
+			// Start tracking
+			if (updateIsShowUserLocation) {
+				updateIsShowUserLocation(true);
+			}
+			startLocationTracking((location: any) => {
+				// setLocations(prev => [...prev, location]);
+				if (location) {
+					getPolylinePointValues();
+					// updateMarkersPosition(location);
+					// updateCurrentPosition(location);
+				} else {
+					updateCurrentPosition(savedLocations);
+				}
+			});
+		};
+		init();
 	}, []);
-
 	useEffect(() => {
 		if (
 			mapRef.current &&
@@ -108,59 +85,36 @@ const MapScreen: React.FC<Props> = props => {
 		}
 	}, [currentPosition]);
 
-	// useEffect(() => {
-	// 	getPolylinePointValues();
-	// }, [
-	// 	markersPosition[0]?.geometry?.coordinates[1],
-	// 	markersPosition[0]?.geometry?.coordinates[0],
-	// 	markersPosition[1]?.geometry?.coordinates[1],
-	// 	markersPosition[1]?.geometry?.coordinates[0],
-	// ]);
+	useEffect(() => {
+		getPolylinePointValues();
+	}, []);
 
-	// const getPolylinePointValues = async () => {
-	// 	const data = await getDrivingRouteCoordinates(
-	// 		markersPosition[0]?.geometry?.coordinates[1],
-	// 		markersPosition[0]?.geometry?.coordinates[0],
-	// 		markersPosition[1]?.geometry?.coordinates[1],
-	// 		markersPosition[1]?.geometry?.coordinates[0]
-	// 	);
-	// 	if (updatePolylines) {
-	// 		updatePolylines(data);
-	// 	}
-	// };
+	const getPolylinePointValues = async () => {
+		if (
+			markersPosition.length >= 2 &&
+			markersPosition[0]?.geometry?.coordinates &&
+			Array.isArray(markersPosition[0]?.geometry?.coordinates) &&
+			markersPosition[1]?.geometry?.coordinates &&
+			Array.isArray(markersPosition[1]?.geometry?.coordinates) &&
+			markersPosition[0]?.geometry?.coordinates.length === 2 &&
+			markersPosition[1]?.geometry?.coordinates.length === 2
+		) {
+			const startLng = String(markersPosition[0].geometry.coordinates[1]);
+			const startLat = String(markersPosition[0].geometry.coordinates[0]);
+			const endLng = String(markersPosition[1].geometry.coordinates[1]);
+			const endLat = String(markersPosition[1].geometry.coordinates[0]);
+			const data = await getDrivingRouteCoordinates(
+				startLng,
+				startLat,
+				endLng,
+				endLat
+			);
+			if (updatePolylines) {
+				updatePolylines(data);
+			}
+		}
+	};
 
-	// useFocusEffect(
-	// 	React.useCallback(() => {
-	// 		console.log('MapScreen is focused');
-	// 		const delayAnimation = setTimeout(() => {
-	// 			if (currentPosition && mapRef.current) {
-	// 				console.log('Animating to region:', currentPosition);
-	// 				mapRef.current.animateToRegion(
-	// 					{
-	// 						latitude: currentPosition.latitude,
-	// 						longitude: currentPosition.longitude,
-	// 						latitudeDelta: 0.01,
-	// 						longitudeDelta: 0.01,
-	// 					},
-	// 					1000
-	// 				);
-	// 			}
-	// 		}, 500); // Adjust delay as needed
-
-	// 		return () => clearTimeout(delayAnimation); // Cleanup timeout
-	// 	}, [currentPosition])
-	// );
-
-	// React.useEffect(() => {
-	// 	const unsubscribe = navigation.addListener('beforeRemove', () => {
-	// 		console.log('Navigating back to MapScreen');
-	// 	});
-
-	// 	return unsubscribe;
-	// }, [navigation]);
-
-	// console.log('markersPositionnnnnnnnnnnnnnnnnn', markersPosition);
-	console.log(polylines, 'polylinesssssssssssssssssssss');
 	return (
 		<View style={styles.container}>
 			<MapView
@@ -169,54 +123,26 @@ const MapScreen: React.FC<Props> = props => {
 				showsUserLocation={isShowUserLocation}
 				followsUserLocation={true}
 				region={{
-					// latitude: 1.28031596092652,
-					// longitude: 103.79608018284,
-					// latitude: currentPosition?.latitude || 2.28031596092652,
-					// longitude: currentPosition?.longitude || 103.79608018284,
 					latitude: currentPosition?.geometry?.coordinates[0] || 37.421998,
 					longitude: currentPosition?.geometry?.coordinates[1] || -122.084,
-					latitudeDelta: 0.2922,
-					longitudeDelta: 0.2421,
-					// latitudeDelta: 0.05,
-					// longitudeDelta: 0.05,
-					// latitudeDelta: 0.0922,
-					// longitudeDelta: 0.0421,
+					latitudeDelta: 0.12922,
+					longitudeDelta: 0.02421,
 				}}
 			>
-				{polylines && Array.isArray(polylines) && polylines.length > 0 && (
-					<Polyline
-						// coordinates={polylines?.geometry?.coordinates.map(
-						// 	(polyline: { latitude: number; longitude: number }) => ({
-						// 		latitude: polyline.latitude,
-						// 		longitude: polyline.longitude,
-						// 	})
-						// )}
-						// coordinates={polylines?.map((polyline: number[]) => ({
-						// 	latitude: polyline[0],
-						// 	longitude: polyline[1],
-						// }))}
-						coordinates={polylines?.map((polyline: any) => ({
-							latitude: polyline.latitude,
-							longitude: polyline.longitude,
-						}))}
-						strokeColor="red"
-						strokeWidth={5}
-					/>
-				)}
-				{/* {polylines?.geometry?.coordinates &&
+				{polylines?.geometry?.coordinates &&
 					Array.isArray(polylines?.geometry?.coordinates) &&
-					polylines?.geometry?.coordinates?.length > 0 && (
+					polylines?.geometry?.coordinates.length > 0 && (
 						<Polyline
 							coordinates={polylines?.geometry?.coordinates?.map(
-								(polyline: number[]) => ({
-									latitude: polyline[1],
-									longitude: polyline[0],
+								(polyline: any) => ({
+									latitude: polyline.latitude,
+									longitude: polyline.longitude,
 								})
 							)}
 							strokeColor="blue"
-							strokeWidth={3}
+							strokeWidth={5}
 						/>
-					)} */}
+					)}
 				{Array.isArray(markersPosition) &&
 					markersPosition.length > 0 &&
 					markersPosition.map((markerPosition, index) => (
@@ -227,7 +153,7 @@ const MapScreen: React.FC<Props> = props => {
 								latitude: markerPosition?.geometry?.coordinates[0],
 								longitude: markerPosition?.geometry?.coordinates[1],
 							}}
-							title="Current Location"
+							title={markerPosition.properties.name}
 						/>
 					))}
 			</MapView>
@@ -268,43 +194,3 @@ const styles = StyleSheet.create({
 		zIndex: 1,
 	},
 });
-
-// console.log('Locationsaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:', locations);
-
-// latitudeDelta: 0.01,
-// longitudeDelta: 0.01,
-// latitude: 37.421998,
-// longitude: -122.084,
-// // latitudeDelta: 0.001,
-// // longitudeDelta: 0.001,
-
-{
-	/* <View style={styles.container}>
-				<MapView
-					style={styles.map}
-					initialRegion={{
-						latitude: 37.421998,
-						longitude: -122.084,
-						// latitudeDelta: 0.001,
-						// longitudeDelta: 0.001,
-						latitudeDelta: 0.0922,
-						longitudeDelta: 0.0421,
-					}}
-				>
-					<Marker coordinate={{ latitude: 37.421998, longitude: -122.084 }} />
-				</MapView>
-			</View> */
-}
-{
-	/* <MapView
-                style={{ width: '100%', height: '100%' }}
-                // showsUserLocation={true}
-                // followsUserLocation={true}
-                // initialRegion={{
-                // 	latitude: markersPosition?.latitude || 0,
-                // 	longitude: markersPosition?.longitude || 0,
-                // 	latitudeDelta: 0.01,
-                // 	longitudeDelta: 0.01,
-                // }}
-            /> */
-}
