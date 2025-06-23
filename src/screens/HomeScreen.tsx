@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Alert, StyleSheet, StatusBar } from 'react-native';
+import { Alert, StyleSheet, StatusBar } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getCurrentLocation, requestStartUpPermission } from '../Utils';
 import { RootStackParamList } from '../home-navigator';
@@ -55,5 +55,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-	container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+	container: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: '#F0EEED',
+	},
 });

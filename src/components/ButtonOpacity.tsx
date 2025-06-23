@@ -1,22 +1,35 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export function ButtonOpacity({
 	onPress,
 	title,
 	isDisabed = false,
+	backgroundColor = '#000957',
+	width = '50%',
+	color = '#FFFFFF',
 }: {
 	onPress: () => void;
 	title: string;
 	isDisabed?: boolean;
+	backgroundColor?: string;
+	width?: import('react-native').DimensionValue;
+	color?: string;
 }) {
 	return (
 		<TouchableOpacity
 			onPress={onPress}
-			style={[styles.buttonContainer, { opacity: isDisabed ? 1 : 0.55 }]}
+			style={[
+				styles.buttonContainer,
+				{
+					opacity: isDisabed ? 0.55 : 1,
+					backgroundColor: backgroundColor,
+					width,
+				},
+			]}
 			disabled={isDisabed}
 		>
-			<Text style={styles.buttonText}>{title}</Text>
+			<Text style={[styles.buttonText, { color }]}>{title}</Text>
 		</TouchableOpacity>
 	);
 }
@@ -41,14 +54,11 @@ export function CardButtonOpacity({
 const styles = StyleSheet.create({
 	mapContainer: { flex: 1 },
 	buttonContainer: {
-		backgroundColor: '#000957',
 		borderRadius: 5,
 		padding: 3,
 		margin: 10,
-		width: '50%',
 	},
 	buttonText: {
-		color: '#FFFFFF',
 		textAlign: 'center',
 		fontWeight: 800,
 		padding: 10,

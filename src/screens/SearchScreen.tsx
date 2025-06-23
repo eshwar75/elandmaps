@@ -68,9 +68,18 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={[styles.FullDisplay, styles.container]}>
 			<StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
-			<View style={{ flex: 1, padding: 20, alignItems: 'center' }}>
+			<View style={{ padding: 2, backgroundColor: '#FFFFFF' }}>
+				<ButtonOpacity
+					onPress={() => navigation.navigate('MapScreen')}
+					title={'Back'}
+					width="20%"
+					backgroundColor="#F0EEED"
+					color=""
+				/>
+			</View>
+			<View style={[styles.containContainer, styles.FullDisplay]}>
 				<KeyboardAvoidingView behavior="padding" style={{ width: '100%' }}>
 					<Input
 						value={searchStartPoint || ''}
@@ -108,11 +117,11 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						}, 1000);
 					}}
 					title="Search"
-					isDisabed={searchStartPoint || searchEndPoint ? true : false}
+					isDisabed={searchStartPoint || searchEndPoint ? false : true}
 				/>
 
 				{(isInputFocus === 'start_point' || isInputFocus === 'end_point') && (
-					<View style={styles.FullDisplay}>
+					<>
 						{isInputFocus === 'start_point' &&
 							Array.isArray(startPointDetails) &&
 							startPointDetails.length > 0 && (
@@ -142,7 +151,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						{isInputFocus === 'end_point' &&
 							Array.isArray(endPointDetails) &&
 							endPointDetails.length > 0 && (
-								<View style={styles.listContainer}>
+								<View style={[styles.FullDisplay, styles.listContainer]}>
 									<FlatList
 										data={endPointDetails}
 										renderItem={({ item }) => (
@@ -164,7 +173,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 									/>
 								</View>
 							)}
-					</View>
+					</>
 				)}
 			</View>
 		</SafeAreaView>
@@ -175,11 +184,10 @@ export default SearchScreen;
 
 const styles = StyleSheet.create({
 	FullDisplay: { flex: 1 },
-	container: { flex: 1, backgroundColor: '#F0EEED' },
+	container: { backgroundColor: '#F0EEED' },
+	containContainer: { padding: 20, alignItems: 'center' },
 	listContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
+		width: '100%',
 		marginTop: 10,
 		backgroundColor: 'rgb(209, 155, 155)',
 		marginHorizontal: 20,
