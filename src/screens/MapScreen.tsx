@@ -10,13 +10,8 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MapView, { Polyline, Marker } from 'react-native-maps';
 import { requestStartUpPermission, startLocationTracking } from '../Utils';
-import { GetStoredDetails } from '../services/usage';
-import { keys } from '../services/usage/keytypes';
 import { RootStackParamList } from '../home-navigator';
-import {
-	LocalStoreContext,
-	SearchPointType,
-} from '../context/LocalStoreContext';
+import { LocalStoreContext } from '../context/LocalStoreContext';
 import { getDrivingRouteCoordinates } from '../services/api/locations';
 import { useNetwork } from '../context';
 
@@ -36,22 +31,17 @@ const MapScreen: React.FC<Props> = props => {
 		currentPosition,
 		isShowUserLocation,
 		updatePolylines,
-		updateMarkersPosition,
-		updateCurrentPosition,
 		updateIsShowUserLocation,
-		updateselectedPoints,
-		updateSearchPoint,
+		noNetworkPresent,
 	} = useContext(LocalStoreContext) as {
 		polylines: any;
 		markersPosition: any[];
 		currentPosition: any;
 		isShowUserLocation: boolean;
 		updatePolylines: (location: any, localStroageRequired?: boolean) => void;
-		updateMarkersPosition: (location: any) => void;
 		updateCurrentPosition: (location: any) => void;
 		updateIsShowUserLocation: (show: boolean) => void;
-		updateselectedPoints: (details: {}) => void;
-		updateSearchPoint?: (points: SearchPointType) => void;
+		noNetworkPresent?: (isNetworkPresent: boolean) => void;
 	};
 	const mapRef = useRef<MapView | null>(null);
 	const { isConnected } = useNetwork();
@@ -62,19 +52,10 @@ const MapScreen: React.FC<Props> = props => {
 				Alert.alert('Permission Denied', 'Location access is required.');
 				return;
 			}
-			// Load saved route
-			if (!isConnected) {
-				const searchPoints = await GetStoredDetails(keys.searchPoints);
-				const selectedPoints = await GetStoredDetails(keys.selectedPoints);
-				const polylinePoints = await GetStoredDetails(keys.polylinePoints);
-				console.log(
-					`searchPoints ${searchPoints} selectedPoints: ${selectedPoints} polylinePoints: ${polylinePoints}`
-				);
-				if (updateSearchPoint) {
-					updateSearchPoint(searchPoints);
-				}
-				updateselectedPoints(selectedPoints);
-				updatePolylines(polylinePoints, true);
+
+			// Load saved local stroage
+			if (noNetworkPresent) {
+				noNetworkPresent(isConnected || false);
 			}
 			// Start tracking
 			if (updateIsShowUserLocation) {

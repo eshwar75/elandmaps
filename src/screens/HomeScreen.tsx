@@ -6,6 +6,7 @@ import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
 import { ButtonOpacity } from '../components';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNetwork } from '../context';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -17,7 +18,10 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
-	const { updateCurrentPosition } = useContext(LocalStoreContext);
+	const { currentPosition, updateCurrentPosition, noNetworkPresent } =
+		useContext(LocalStoreContext);
+	const { isConnected } = useNetwork();
+
 	useEffect(() => {
 		const init = async () => {
 			try {
@@ -27,8 +31,25 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 					return;
 				} else {
 					getCurrentLocation((location: any) => {
-						updateCurrentPosition(location);
+						if (
+							!currentPosition ||
+							!currentPosition?.geometry?.coordinates[0] ||
+							!currentPosition?.geometry?.coordinates[1] ||
+							!Number.isNaN(currentPosition?.geometry?.coordinates[0]) ||
+							!Number.isNaN(currentPosition?.geometry?.coordinates[1])
+						) {
+							console.log(
+								currentPosition,
+								'currentPositionnnnnnnnnnnnnnn',
+								location
+							);
+							updateCurrentPosition(location);
+						}
 					});
+					// Load saved local stroage
+					if (noNetworkPresent) {
+						noNetworkPresent(isConnected || false);
+					}
 				}
 			} catch (error) {
 				console.error('Error initializing HomeScreen:', error);

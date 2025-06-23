@@ -3,7 +3,7 @@ import {
 	convertGeojsonSinglePoint,
 	convertGeojsonPolyLines,
 } from '../Utils/convertGeoJson';
-import { StoreObject } from '../services/usage';
+import { GetStoredDetails, StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { removeDuplicatePointDetails } from '../Utils';
 
@@ -50,6 +50,7 @@ interface LocalStoreContextProps {
 	updateselectedPoints?: (details: {}) => void;
 	updateSearchPoint?: (points: SearchPointType) => void;
 	updateOnInputFocus?: (value: string) => void;
+	noNetworkPresent?: (isNetworkPresent: boolean) => void;
 }
 export const LocalStoreContext = React.createContext(
 	{} as LocalStoreContextProps
@@ -205,6 +206,26 @@ export const LocalStoreContextProvider: React.FC<
 		setIsInputFocus(value);
 	};
 
+	const noNetworkPresent = async (isNetworkPresent: boolean) => {
+		if (
+			!isNetworkPresent &&
+			(!markersPosition ||
+				(Array.isArray(markersPosition) && markersPosition.length === 0))
+		) {
+			const searchPoints = await GetStoredDetails(keys.searchPoints);
+			const selectedPoints = await GetStoredDetails(keys.selectedPoints);
+			const polylinePoints = await GetStoredDetails(keys.polylinePoints);
+
+			if (updateSearchPoint) {
+				updateSearchPoint(searchPoints);
+			}
+			if (updateselectedPoints) {
+				updateselectedPoints(selectedPoints);
+			}
+			updatePolylines(polylinePoints, true);
+		}
+	};
+
 	return (
 		<LocalStoreContext.Provider
 			value={{
@@ -235,6 +256,7 @@ export const LocalStoreContextProvider: React.FC<
 				updateselectedPoints,
 				updateSearchPoint,
 				updateOnInputFocus,
+				noNetworkPresent,
 			}}
 		>
 			{children}
