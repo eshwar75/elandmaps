@@ -9,3 +9,9 @@ export function removeDuplicatePointDetails(duplicateDatas: any) {
 	}
 	return result;
 }
+
+export function normalizedKeys(obj: any) {
+	return Object.fromEntries(
+		Object.entries(obj).map(([key, val]) => [key.toLowerCase(), val])
+	);
+}

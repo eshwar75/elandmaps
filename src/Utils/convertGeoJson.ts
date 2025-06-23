@@ -1,17 +1,24 @@
+import { normalizedKeys } from './commonFunctions';
+
 export const convertGeojsonSinglePoint = (data: any, typeName: string) => {
+	const normalizedkeyAndValues = normalizedKeys(data);
 	return {
 		type: 'Feature',
 		timestamp: Date.now(),
 		geometry: {
 			type: typeName,
-			coordinates: [parseFloat(data.LATITUDE), parseFloat(data.LONGITUDE)],
+			coordinates: [
+				parseFloat(String(normalizedkeyAndValues?.latitude)),
+				parseFloat(String(normalizedkeyAndValues?.longitude)),
+			],
 		},
 		properties: {
 			name:
-				data.BUILDING && data.BUILDING.toLowerCase() !== 'nil'
-					? data.BUILDING
-					: data.ADDRESS,
-			postal: data.POSTAL || '-',
+				typeof normalizedkeyAndValues.building === 'string' &&
+				normalizedkeyAndValues.building.toLowerCase() !== 'nil'
+					? data.building
+					: data.address,
+			postal: data.postal || '-',
 		},
 	};
 };
