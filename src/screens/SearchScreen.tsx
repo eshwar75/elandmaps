@@ -7,6 +7,7 @@ import {
 	Text,
 	FlatList,
 	StatusBar,
+	KeyboardAvoidingView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../home-navigator';
@@ -17,6 +18,7 @@ import { StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { ButtonOpacity, CardButtonOpacity } from '../components';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Input from '../components/Input';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -70,22 +72,20 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		<SafeAreaView style={styles.container}>
 			<StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
 			<View style={{ flex: 1, padding: 20, alignItems: 'center' }}>
-				<TextInput
-					style={styles.input}
-					onChangeText={updateSearchStartPoint}
-					value={searchStartPoint}
-					placeholder="Start point"
-					keyboardType="default"
-					placeholderTextColor="#ffffff"
-				/>
-				<TextInput
-					style={styles.input}
-					onChangeText={updateSearchEndPoint}
-					value={searchEndPoint}
-					placeholder="End Point"
-					keyboardType="default"
-					placeholderTextColor="#ffffff"
-				/>
+				<KeyboardAvoidingView behavior="padding" style={{ width: '100%' }}>
+					<Input
+						value={searchStartPoint || ''}
+						onChange={updateSearchStartPoint || (() => {})}
+						placeHolder="Start point"
+					/>
+				</KeyboardAvoidingView>
+				<KeyboardAvoidingView behavior="padding" style={{ width: '100%' }}>
+					<Input
+						value={searchEndPoint || ''}
+						onChange={updateSearchEndPoint || (() => {})}
+						placeHolder="End point"
+					/>
+				</KeyboardAvoidingView>
 				<ButtonOpacity
 					onPress={async () => {
 						if (updateStatePointDetails) {
@@ -160,32 +160,4 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgb(209, 155, 155)',
 		marginHorizontal: 20,
 	},
-	input: {
-		height: 40,
-		marginVertical: 12,
-		borderWidth: 1,
-		paddingInline: 20,
-		paddingBlock: 30,
-		borderRadius: 5,
-		width: '100%',
-		backgroundColor: '#1a1a1a',
-		color: '#ffffff',
-	},
-	cardTextContainer: {
-		backgroundColor: '#FFFFFF',
-		padding: 10,
-		borderRadius: 5,
-		elevation: 3,
-	},
-	buttonNormalContainer: {
-		backgroundColor: 'blue',
-		borderRadius: 5,
-		marginVertical: 20,
-		width: 'auto',
-	},
-	buttonNormalTextContainer: {
-		padding: 10,
-		borderRadius: 5,
-	},
-	buttonText: { color: 'white', textAlign: 'center', fontWeight: 600 },
 });
