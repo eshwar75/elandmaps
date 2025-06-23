@@ -34,6 +34,7 @@ interface LocalStoreContextProps {
 	endPointDetails?: any[];
 	selectedStartPointValue?: {};
 	selectedEndPointValue?: {};
+	isInputFocus?: string;
 
 	// actions
 	updatePolylines: (newPolyline: any, localStroageRequired?: boolean) => void;
@@ -48,6 +49,7 @@ interface LocalStoreContextProps {
 	selectedEndPoint?: (details: {}) => void;
 	updateselectedPoints?: (details: {}) => void;
 	updateSearchPoint?: (points: SearchPointType) => void;
+	updateOnInputFocus?: (value: string) => void;
 }
 export const LocalStoreContext = React.createContext(
 	{} as LocalStoreContextProps
@@ -69,6 +71,7 @@ export const LocalStoreContextProvider: React.FC<
 	const [selectedEndPointValue, setSelectedEndPointValue] = useState<any>({});
 	const [resetStartValue, setResetStartValue] = useState(false);
 	const [resetEndValue, setResetEndValue] = useState(false);
+	const [isInputFocus, setIsInputFocus] = useState<string>('');
 
 	const updatePolylines = (
 		newPolylineData: any,
@@ -124,10 +127,16 @@ export const LocalStoreContextProvider: React.FC<
 	};
 
 	const updateSearchStartPoint = (value: string) => {
+		if (typeof value === 'string' && value.length === 0) {
+			setStartPointDetails([]);
+		}
 		setSearchStartPoint(value);
 	};
 
 	const updateSearchEndPoint = (value: string) => {
+		if (typeof value === 'string' && value.length === 0) {
+			setEndPointDetails([]);
+		}
 		setSearchEndPoint(value);
 	};
 
@@ -156,7 +165,7 @@ export const LocalStoreContextProvider: React.FC<
 			setResetEndValue(false);
 		} else {
 			const removedDuplicateData = removeDuplicatePointDetails([
-				...startPointDetails,
+				...endPointDetails,
 				...details,
 			]);
 			setEndPointDetails(removedDuplicateData);
@@ -164,7 +173,6 @@ export const LocalStoreContextProvider: React.FC<
 	};
 
 	const updateselectedPoints = (selectedValue: any) => {
-		console.log('selectedValue', selectedValue);
 		selectedStartPoint(selectedValue?.startPoint);
 		selectedEndPoint(selectedValue?.endPoint);
 	};
@@ -193,6 +201,10 @@ export const LocalStoreContextProvider: React.FC<
 		setResetEndValue(true);
 	};
 
+	const updateOnInputFocus = (value: string) => {
+		setIsInputFocus(value);
+	};
+
 	return (
 		<LocalStoreContext.Provider
 			value={{
@@ -207,6 +219,7 @@ export const LocalStoreContextProvider: React.FC<
 				endPointDetails,
 				selectedStartPointValue,
 				selectedEndPointValue,
+				isInputFocus,
 
 				// actions
 				updatePolylines,
@@ -221,6 +234,7 @@ export const LocalStoreContextProvider: React.FC<
 				selectedEndPoint,
 				updateselectedPoints,
 				updateSearchPoint,
+				updateOnInputFocus,
 			}}
 		>
 			{children}

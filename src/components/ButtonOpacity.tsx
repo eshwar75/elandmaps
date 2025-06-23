@@ -4,15 +4,19 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 export function ButtonOpacity({
 	onPress,
 	title,
+	isDisabed = false,
 }: {
 	onPress: () => void;
 	title: string;
+	isDisabed?: boolean;
 }) {
 	return (
-		<TouchableOpacity onPress={onPress} style={styles.buttonContainer}>
-			<View style={styles.cardTextContainer}>
-				<Text style={styles.buttonText}>{title}</Text>
-			</View>
+		<TouchableOpacity
+			onPress={onPress}
+			style={[styles.buttonContainer, { opacity: isDisabed ? 1 : 0.55 }]}
+			disabled={isDisabed}
+		>
+			<Text style={styles.buttonText}>{title}</Text>
 		</TouchableOpacity>
 	);
 }
@@ -27,7 +31,7 @@ export function CardButtonOpacity({
 	subTitle: string;
 }) {
 	return (
-		<TouchableOpacity style={{ padding: 16 }} onPress={onPress}>
+		<TouchableOpacity style={{ padding: 16, width: '100%' }} onPress={onPress}>
 			{title && <Text style={styles.listTitle}>{title}</Text>}
 			<Text style={styles.listSubTitle}>{subTitle || '-'}</Text>
 		</TouchableOpacity>
@@ -36,18 +40,19 @@ export function CardButtonOpacity({
 
 const styles = StyleSheet.create({
 	mapContainer: { flex: 1 },
-	cardTextContainer: {
-		padding: 10,
-		borderRadius: 5,
-		elevation: 3,
-	},
 	buttonContainer: {
-		backgroundColor: 'blue',
+		backgroundColor: '#000957',
 		borderRadius: 5,
+		padding: 3,
 		margin: 10,
 		width: '50%',
 	},
-	buttonText: { color: 'white', textAlign: 'center', fontWeight: 600 },
+	buttonText: {
+		color: '#FFFFFF',
+		textAlign: 'center',
+		fontWeight: 800,
+		padding: 10,
+	},
 	listTitle: {
 		color: '#FFFFFF',
 		fontSize: 14,

@@ -1,10 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import {
-	TextInput,
 	StyleSheet,
-	TouchableOpacity,
 	View,
-	Text,
 	FlatList,
 	StatusBar,
 	KeyboardAvoidingView,
@@ -42,6 +39,8 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		updateEndPointDetails,
 		selectedStartPoint,
 		selectedEndPoint,
+		isInputFocus,
+		updateOnInputFocus,
 	} = useContext(LocalStoreContext);
 	const startPointValue = useDebounce(searchStartPoint, 1000);
 	const endPointValue = useDebounce(searchEndPoint, 1000);
@@ -76,14 +75,20 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					<Input
 						value={searchStartPoint || ''}
 						onChange={updateSearchStartPoint || (() => {})}
-						placeHolder="Start point"
+						placeholder="Start point"
+						onInputFocus={() =>
+							updateOnInputFocus && updateOnInputFocus('start_point')
+						}
 					/>
 				</KeyboardAvoidingView>
 				<KeyboardAvoidingView behavior="padding" style={{ width: '100%' }}>
 					<Input
 						value={searchEndPoint || ''}
 						onChange={updateSearchEndPoint || (() => {})}
-						placeHolder="End point"
+						placeholder="End point"
+						onInputFocus={() =>
+							updateOnInputFocus && updateOnInputFocus('end_point')
+						}
 					/>
 				</KeyboardAvoidingView>
 				<ButtonOpacity
@@ -100,48 +105,65 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						});
 						setTimeout(() => {
 							navigation.navigate('MapScreen');
-						}, 2000);
+						}, 1000);
 					}}
 					title="Search"
+					isDisabed={searchStartPoint || searchEndPoint ? true : false}
 				/>
 
-				{Array.isArray(startPointDetails) && startPointDetails.length > 0 && (
-					<View style={styles.listContainer}>
-						<FlatList
-							data={startPointDetails}
-							renderItem={({ item }) => (
-								<CardButtonOpacity
-									onPress={() => selectedStartPoint && selectedStartPoint(item)}
-									title={
-										item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
-									}
-									subTitle={item.ADDRESS || ''}
-								/>
+				{(isInputFocus === 'start_point' || isInputFocus === 'end_point') && (
+					<View style={styles.FullDisplay}>
+						{isInputFocus === 'start_point' &&
+							Array.isArray(startPointDetails) &&
+							startPointDetails.length > 0 && (
+								<View style={styles.listContainer}>
+									<FlatList
+										data={startPointDetails}
+										renderItem={({ item }) => (
+											<CardButtonOpacity
+												onPress={() =>
+													selectedStartPoint && selectedStartPoint(item)
+												}
+												title={
+													item.BUILDING.toLowerCase() !== 'nil'
+														? item.BUILDING
+														: ''
+												}
+												subTitle={item.ADDRESS || ''}
+											/>
+										)}
+										keyExtractor={(item, index) =>
+											item.id?.toString() || index.toString()
+										}
+									/>
+								</View>
 							)}
-							keyExtractor={(item, index) =>
-								item.id?.toString() || index.toString()
-							}
-						/>
-					</View>
-				)}
 
-				{Array.isArray(endPointDetails) && endPointDetails.length > 0 && (
-					<View style={styles.listContainer}>
-						<FlatList
-							data={endPointDetails}
-							renderItem={({ item }) => (
-								<CardButtonOpacity
-									onPress={() => selectedEndPoint && selectedEndPoint(item)}
-									title={
-										item.BUILDING.toLowerCase() !== 'nil' ? item.BUILDING : ''
-									}
-									subTitle={item.ADDRESS || ''}
-								/>
+						{isInputFocus === 'end_point' &&
+							Array.isArray(endPointDetails) &&
+							endPointDetails.length > 0 && (
+								<View style={styles.listContainer}>
+									<FlatList
+										data={endPointDetails}
+										renderItem={({ item }) => (
+											<CardButtonOpacity
+												onPress={() =>
+													selectedEndPoint && selectedEndPoint(item)
+												}
+												title={
+													item.BUILDING.toLowerCase() !== 'nil'
+														? item.BUILDING
+														: ''
+												}
+												subTitle={item.ADDRESS || ''}
+											/>
+										)}
+										keyExtractor={(item, index) =>
+											item.id?.toString() || index.toString()
+										}
+									/>
+								</View>
 							)}
-							keyExtractor={(item, index) =>
-								item.id?.toString() || index.toString()
-							}
-						/>
 					</View>
 				)}
 			</View>
@@ -152,12 +174,15 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 export default SearchScreen;
 
 const styles = StyleSheet.create({
-	container: { flex: 1 },
+	FullDisplay: { flex: 1 },
+	container: { flex: 1, backgroundColor: '#F0EEED' },
 	listContainer: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		marginTop: 10,
 		backgroundColor: 'rgb(209, 155, 155)',
 		marginHorizontal: 20,
+		borderRadius: 6,
 	},
 });

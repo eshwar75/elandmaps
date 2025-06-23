@@ -1,40 +1,48 @@
 import React from 'react';
-import { StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 interface InputProps {
 	value: string;
 	onChange: (value: string) => void;
-	placeHolder: string;
+	placeholder: string;
+	onInputFocus?: () => void;
 }
 export default function Input({
 	value,
 	onChange = () => {},
-	placeHolder,
+	placeholder,
+	onInputFocus = () => {},
 }: InputProps) {
 	return (
-		<>
+		<View style={styles.wrapper}>
 			<TextInput
 				style={styles.input}
 				onChangeText={onChange}
 				value={value || ''}
-				placeholder={placeHolder}
+				placeholder={placeholder}
 				keyboardType="default"
-				placeholderTextColor="#ffffff"
+				placeholderTextColor="#B4B4B8"
+				underlineColorAndroid="transparent"
+				onFocus={onInputFocus}
 			/>
-		</>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
+	wrapper: {
+		backgroundColor: '#FFFFFF',
+		// borderColor: '#000957',
+		justifyContent: 'center',
+		height: 48,
+		borderRadius: 8,
+		paddingHorizontal: 12,
+		marginVertical: 10,
+	},
 	input: {
-		height: 40,
-		marginVertical: 12,
-		borderWidth: 1,
-		paddingInline: 20,
-		paddingBlock: 30,
-		borderRadius: 5,
-		width: '100%',
-		backgroundColor: '#1a1a1a',
-		color: '#ffffff',
+		flex: 1,
+		color: '#27374D',
+		height: '100%',
+		fontSize: 16,
 	},
 });
