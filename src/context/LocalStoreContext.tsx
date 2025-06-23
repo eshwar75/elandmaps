@@ -5,6 +5,7 @@ import {
 } from '../Utils/convertGeoJson';
 import { StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
+import { removeDuplicatePointDetails } from '../Utils';
 
 export type LocationTypes = {
 	latitude: number;
@@ -136,19 +137,29 @@ export const LocalStoreContextProvider: React.FC<
 
 	const updateStatePointDetails = (details: any) => {
 		if (resetStartValue) {
-			setStartPointDetails(details);
+			const removedDuplicateData = removeDuplicatePointDetails(details);
+			setStartPointDetails(removedDuplicateData || []);
 			setResetStartValue(false);
 		} else {
-			setStartPointDetails([...new Set([...startPointDetails, ...details])]);
+			const removedDuplicateData = removeDuplicatePointDetails([
+				...startPointDetails,
+				...details,
+			]);
+			setStartPointDetails(removedDuplicateData || []);
 		}
 	};
 
 	const updateEndPointDetails = (details: any) => {
 		if (resetEndValue) {
-			setEndPointDetails(details);
+			const removedDuplicateData = removeDuplicatePointDetails(details);
+			setEndPointDetails(removedDuplicateData || []);
 			setResetEndValue(false);
 		} else {
-			setEndPointDetails([...new Set([...endPointDetails, ...details])]);
+			const removedDuplicateData = removeDuplicatePointDetails([
+				...startPointDetails,
+				...details,
+			]);
+			setEndPointDetails(removedDuplicateData);
 		}
 	};
 

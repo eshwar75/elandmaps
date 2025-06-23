@@ -62,6 +62,7 @@ const MapScreen: React.FC<Props> = props => {
 				Alert.alert('Permission Denied', 'Location access is required.');
 				return;
 			}
+			// Load saved route
 			if (!isConnected) {
 				const searchPoints = await GetStoredDetails(keys.searchPoints);
 				const selectedPoints = await GetStoredDetails(keys.selectedPoints);
@@ -75,7 +76,6 @@ const MapScreen: React.FC<Props> = props => {
 				updateselectedPoints(selectedPoints);
 				updatePolylines(polylinePoints, true);
 			}
-			// Load saved route
 			// Start tracking
 			if (updateIsShowUserLocation) {
 				updateIsShowUserLocation(true);
