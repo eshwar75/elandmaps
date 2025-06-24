@@ -71,6 +71,28 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		}
 	};
 
+	const searchRouteMap = () => {
+		if (updateStatePointDetails) {
+			updateStatePointDetails([]);
+		}
+		if (updateEndPointDetails) {
+			updateEndPointDetails([]);
+		}
+		if (isConnected) {
+			StoreObject(`${keys.searchPoints}`, {
+				startPoint: searchStartPoint,
+				endPoint: searchEndPoint,
+			});
+		}
+		if (!isConnected) {
+			noNetworkPresent && noNetworkPresent(isConnected || false);
+		}
+
+		setTimeout(() => {
+			navigation.navigate('MapScreen');
+		}, 1000);
+	};
+
 	return (
 		<SafeAreaView style={[styles.FullDisplay, styles.container]}>
 			<StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
@@ -105,27 +127,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					/>
 				</KeyboardAvoidingView>
 				<ButtonOpacity
-					onPress={() => {
-						if (updateStatePointDetails) {
-							updateStatePointDetails([]);
-						}
-						if (updateEndPointDetails) {
-							updateEndPointDetails([]);
-						}
-						if (isConnected) {
-							StoreObject(`${keys.searchPoints}`, {
-								startPoint: searchStartPoint,
-								endPoint: searchEndPoint,
-							});
-						}
-						if (!isConnected) {
-							noNetworkPresent && noNetworkPresent(isConnected || false);
-						}
-
-						setTimeout(() => {
-							navigation.navigate('MapScreen');
-						}, 1000);
-					}}
+					onPress={searchRouteMap}
 					title="Search"
 					isDisabed={searchStartPoint || searchEndPoint ? false : true}
 				/>
