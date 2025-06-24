@@ -5,7 +5,7 @@ import {
 } from '../Utils/convertGeoJson';
 import { GetStoredDetails, StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
-import { removeDuplicatePointDetails } from '../Utils';
+import { normalizedKeys, removeDuplicatePointDetails } from '../Utils';
 
 export type LocationTypes = {
 	latitude: number;
@@ -16,7 +16,7 @@ export type SearchPointType = {
 	endPoint: string;
 };
 type converJsonType = {
-	type: 'Feature';
+	type: string;
 	timestamp: string;
 	geometry: { type: string; coordinates: LocationTypes[][] };
 	properties: { name: string };
@@ -35,6 +35,7 @@ interface LocalStoreContextProps {
 	selectedStartPointValue?: {};
 	selectedEndPointValue?: {};
 	isInputFocus?: string;
+	zoominPosition?: any;
 
 	// actions
 	updatePolylines: (newPolyline: any, localStroageRequired?: boolean) => void;
@@ -51,6 +52,8 @@ interface LocalStoreContextProps {
 	updateSearchPoint?: (points: SearchPointType) => void;
 	updateOnInputFocus?: (value: string) => void;
 	noNetworkPresent?: (isNetworkPresent: boolean) => void;
+	updateZoominPosition?: (newPosition: any) => void;
+	getLocalStorageSearchpoints?: (isNetworkPresent: boolean) => void;
 }
 export const LocalStoreContext = React.createContext(
 	{} as LocalStoreContextProps
@@ -73,19 +76,13 @@ export const LocalStoreContextProvider: React.FC<
 	const [resetStartValue, setResetStartValue] = useState(false);
 	const [resetEndValue, setResetEndValue] = useState(false);
 	const [isInputFocus, setIsInputFocus] = useState<string>('');
+	const [zoominPosition, setZoominPosition] = useState<any>(null);
 
 	const updatePolylines = (
 		newPolylineData: any,
 		localStroageRequired?: boolean
 	) => {
 		if (Array.isArray(newPolylineData) && newPolylineData[0].length > 0) {
-			if (!localStroageRequired) {
-				StoreObject(`${keys.polylinePoints}`, newPolylineData);
-				StoreObject(`${keys.selectedPoints}`, {
-					startPoint: selectedStartPointValue,
-					endPoint: selectedEndPointValue,
-				});
-			}
 			const convertedData = newPolylineData.map((coords: number[]) => {
 				const [lng, lat] = coords;
 				return { latitude: lat, longitude: lng };
@@ -94,16 +91,23 @@ export const LocalStoreContextProvider: React.FC<
 				convertedData,
 				'linestring',
 				`${
-					selectedStartPointValue?.BUILDING?.toLowerCase() !== 'nil'
-						? selectedStartPointValue.BUILDING
-						: selectedStartPointValue.ADDRESS
+					selectedStartPointValue?.building?.toLowerCase() !== 'nil'
+						? selectedStartPointValue.building
+						: selectedStartPointValue.address
 				}-${
-					selectedEndPointValue?.BUILDING?.toLowerCase() !== 'nil'
-						? selectedEndPointValue.BUILDING
-						: selectedEndPointValue.ADDRESS
+					selectedEndPointValue?.building?.toLowerCase() !== 'nil'
+						? selectedEndPointValue.building
+						: selectedEndPointValue.address
 				}-Driving-Route`
 			);
-			setPolylines({ ...objectPolyLines, type: 'Feature' });
+			if (!localStroageRequired) {
+				StoreObject(`${keys.polylinePoints}`, newPolylineData);
+				StoreObject(`${keys.selectedPoints}`, {
+					startPoint: selectedStartPointValue,
+					endPoint: selectedEndPointValue,
+				});
+			}
+			setPolylines(objectPolyLines);
 		}
 	};
 
@@ -120,6 +124,14 @@ export const LocalStoreContextProvider: React.FC<
 			'Point'
 		);
 		setCurrentPosition(currentPositionPoint);
+	};
+
+	const updateZoominPosition = (newPosition: any) => {
+		const currentPositionPoint = convertGeojsonSinglePoint(
+			newPosition,
+			'Point'
+		);
+		setZoominPosition(currentPositionPoint);
 	};
 
 	const updateSearchPoint = (points: SearchPointType) => {
@@ -179,25 +191,27 @@ export const LocalStoreContextProvider: React.FC<
 	};
 
 	const selectedStartPoint = (selectedValue: any) => {
-		setSelectedStartPointValue(selectedValue);
-		updateMarkersPosition(selectedValue);
-		updateCurrentPosition(selectedValue);
+		const keysNormlized: any = normalizedKeys(selectedValue);
+		setSelectedStartPointValue(keysNormlized);
+		updateMarkersPosition(keysNormlized);
+		updateZoominPosition(keysNormlized);
 
-		if (selectedValue.BUILDING.toLowerCase() !== 'nil') {
-			setSearchStartPoint(selectedValue.BUILDING);
+		if (keysNormlized && keysNormlized?.building?.toLowerCase() !== 'nil') {
+			setSearchStartPoint(keysNormlized?.building);
 		} else {
-			setSearchStartPoint(selectedValue.ADDRESS);
+			setSearchStartPoint(keysNormlized?.address);
 		}
 		setResetStartValue(true);
 	};
 
 	const selectedEndPoint = (selectedValue: any) => {
-		setSelectedEndPointValue(selectedValue);
-		updateMarkersPosition(selectedValue);
-		if (selectedValue.BUILDING.toLowerCase() !== 'nil') {
-			setSearchEndPoint(selectedValue.BUILDING);
+		const keysNormlized: any = normalizedKeys(selectedValue);
+		setSelectedEndPointValue(keysNormlized);
+		updateMarkersPosition(keysNormlized);
+		if (keysNormlized && keysNormlized?.building?.toLowerCase() !== 'nil') {
+			setSearchEndPoint(keysNormlized?.building);
 		} else {
-			setSearchEndPoint(selectedValue.ADDRESS);
+			setSearchEndPoint(keysNormlized?.address);
 		}
 		setResetEndValue(true);
 	};
@@ -212,17 +226,20 @@ export const LocalStoreContextProvider: React.FC<
 			(!markersPosition ||
 				(Array.isArray(markersPosition) && markersPosition.length === 0))
 		) {
-			const searchPoints = await GetStoredDetails(keys.searchPoints);
 			const selectedPoints = await GetStoredDetails(keys.selectedPoints);
-			const polylinePoints = await GetStoredDetails(keys.polylinePoints);
+			const dirvingRoute = await GetStoredDetails(keys.polylinePoints);
 
-			if (updateSearchPoint) {
+			updateselectedPoints(selectedPoints);
+			setPolylines(dirvingRoute);
+		}
+	};
+
+	const getLocalStorageSearchpoints = async (isNetworkPresent: boolean) => {
+		if (!isNetworkPresent) {
+			const searchPoints = await GetStoredDetails(keys.searchPoints);
+			if (searchPoints) {
 				updateSearchPoint(searchPoints);
 			}
-			if (updateselectedPoints) {
-				updateselectedPoints(selectedPoints);
-			}
-			updatePolylines(polylinePoints, true);
 		}
 	};
 
@@ -241,6 +258,7 @@ export const LocalStoreContextProvider: React.FC<
 				selectedStartPointValue,
 				selectedEndPointValue,
 				isInputFocus,
+				zoominPosition,
 
 				// actions
 				updatePolylines,
@@ -257,6 +275,8 @@ export const LocalStoreContextProvider: React.FC<
 				updateSearchPoint,
 				updateOnInputFocus,
 				noNetworkPresent,
+				updateZoominPosition,
+				getLocalStorageSearchpoints,
 			}}
 		>
 			{children}

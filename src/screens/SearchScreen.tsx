@@ -11,11 +11,13 @@ import { RootStackParamList } from '../home-navigator';
 import { LocalStoreContext } from '../context/LocalStoreContext';
 import useDebounce from '../hooks/useDebounce';
 import { getLocationCoordinates } from '../services/api/locations';
-import { StoreObject } from '../services/usage';
+import { GetStoredDetails, StoreObject } from '../services/usage';
 import { keys } from '../services/usage/keytypes';
 import { ButtonOpacity, CardButtonOpacity } from '../components';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Input from '../components/Input';
+import { useNetwork } from '../context';
+import { normalizedKeys } from '../Utils';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
 	RootStackParamList,
@@ -27,6 +29,7 @@ interface Props {
 }
 
 const SearchScreen: React.FC<Props> = ({ navigation }) => {
+	const { isConnected } = useNetwork();
 	const {
 		searchStartPoint,
 		searchEndPoint,
@@ -41,6 +44,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 		selectedEndPoint,
 		isInputFocus,
 		updateOnInputFocus,
+		noNetworkPresent,
 	} = useContext(LocalStoreContext);
 	const startPointValue = useDebounce(searchStartPoint, 1000);
 	const endPointValue = useDebounce(searchEndPoint, 1000);
@@ -101,17 +105,23 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 					/>
 				</KeyboardAvoidingView>
 				<ButtonOpacity
-					onPress={async () => {
+					onPress={() => {
 						if (updateStatePointDetails) {
 							updateStatePointDetails([]);
 						}
 						if (updateEndPointDetails) {
 							updateEndPointDetails([]);
 						}
-						StoreObject(`${keys.searchPoints}`, {
-							startPoint: searchStartPoint,
-							endPoint: searchEndPoint,
-						});
+						if (isConnected) {
+							StoreObject(`${keys.searchPoints}`, {
+								startPoint: searchStartPoint,
+								endPoint: searchEndPoint,
+							});
+						}
+						if (!isConnected) {
+							noNetworkPresent && noNetworkPresent(isConnected || false);
+						}
+
 						setTimeout(() => {
 							navigation.navigate('MapScreen');
 						}, 1000);
@@ -125,7 +135,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
 						{isInputFocus === 'start_point' &&
 							Array.isArray(startPointDetails) &&
 							startPointDetails.length > 0 && (
-								<View style={styles.listContainer}>
+								<View style={[styles.FullDisplay, styles.listContainer]}>
 									<FlatList
 										data={startPointDetails}
 										renderItem={({ item }) => (

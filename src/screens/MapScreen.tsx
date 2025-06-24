@@ -33,6 +33,7 @@ const MapScreen: React.FC<Props> = props => {
 		updatePolylines,
 		updateIsShowUserLocation,
 		noNetworkPresent,
+		zoominPosition,
 	} = useContext(LocalStoreContext) as {
 		polylines: any;
 		markersPosition: any[];
@@ -42,6 +43,7 @@ const MapScreen: React.FC<Props> = props => {
 		updateCurrentPosition: (location: any) => void;
 		updateIsShowUserLocation: (show: boolean) => void;
 		noNetworkPresent?: (isNetworkPresent: boolean) => void;
+		zoominPosition?: any;
 	};
 	const mapRef = useRef<MapView | null>(null);
 	const { isConnected } = useNetwork();
@@ -76,21 +78,21 @@ const MapScreen: React.FC<Props> = props => {
 	useEffect(() => {
 		if (
 			mapRef.current &&
-			currentPosition &&
-			currentPosition.latitude &&
-			currentPosition.longitude
+			zoominPosition &&
+			zoominPosition?.geometry?.coordinates[0] &&
+			zoominPosition?.geometry?.coordinates[1]
 		) {
 			mapRef.current.animateToRegion(
 				{
-					latitude: currentPosition.latitude,
-					longitude: currentPosition.longitude,
+					latitude: zoominPosition?.geometry?.coordinates[0],
+					longitude: zoominPosition?.geometry?.coordinates[1],
 					latitudeDelta: 0.01,
 					longitudeDelta: 0.01,
 				},
 				1000
 			);
 		}
-	}, [currentPosition]);
+	}, [zoominPosition]);
 
 	useEffect(() => {
 		getPolylinePointValues();
@@ -128,8 +130,8 @@ const MapScreen: React.FC<Props> = props => {
 				showsUserLocation={isShowUserLocation}
 				followsUserLocation={true}
 				region={{
-					latitude: currentPosition?.geometry?.coordinates[0] || 37.421998,
-					longitude: currentPosition?.geometry?.coordinates[1] || -122.084,
+					latitude: zoominPosition?.geometry?.coordinates[0] || 37.421998,
+					longitude: zoominPosition?.geometry?.coordinates[1] || -122.084,
 					latitudeDelta: 0.12922,
 					longitudeDelta: 0.02421,
 				}}

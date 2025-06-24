@@ -18,7 +18,7 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
-	const { currentPosition, updateCurrentPosition, noNetworkPresent } =
+	const { updateCurrentPosition, getLocalStorageSearchpoints } =
 		useContext(LocalStoreContext);
 	const { isConnected } = useNetwork();
 
@@ -31,24 +31,11 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 					return;
 				} else {
 					getCurrentLocation((location: any) => {
-						if (
-							!currentPosition ||
-							!currentPosition?.geometry?.coordinates[0] ||
-							!currentPosition?.geometry?.coordinates[1] ||
-							!Number.isNaN(currentPosition?.geometry?.coordinates[0]) ||
-							!Number.isNaN(currentPosition?.geometry?.coordinates[1])
-						) {
-							console.log(
-								currentPosition,
-								'currentPositionnnnnnnnnnnnnnn',
-								location
-							);
-							updateCurrentPosition(location);
-						}
+						updateCurrentPosition(location);
 					});
 					// Load saved local stroage
-					if (noNetworkPresent) {
-						noNetworkPresent(isConnected || false);
+					if (getLocalStorageSearchpoints && isConnected === false) {
+						getLocalStorageSearchpoints(isConnected);
 					}
 				}
 			} catch (error) {
